@@ -4,26 +4,69 @@ on:
   push:
     branch: main
 
+env:
+  GODOT_VERSION: 3.4.5
+  EXPORT_NAME: tip-the-rabbit
+
 jobs:
   build_and_deploy:
-    name: Build and Publish
-    runs-on: ubuntu-latest
+    name: Web Export
+    runs-on: ubuntu-20.04
+    container:
+      image: barichello/godot-ci:3.4.5-stable
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v2
         with:
-          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
-          fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
+          lfs: true
 
-      - name: Setup Godot
-        uses: lihop/setup-godot@v0.1.1
+      - name: Setup
+        run: |
+          mkdir -v -p ~/.local/share/godot/templates
+          mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
 
-      - name: Compile Game
-        shell: bash
-        run: godot --export "HTML5" --no-window
+      - name: Web Build
+        run: |
+          mkdir -v -p dist
+          cd $EXPORT_NAME
+          godot -v --export "HTML5" ../dist/index.html
 
-      - name: Deploy Web Assets 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.3.3
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v1
         with:
-          branch: gh-pages
-          folder: dist
+          name: web
+          path: dist
+
+      - name: Install rsync 📚
+        run: |
+          apt-get update && apt-get install -y rsync
+
+      - name: Deploy to GitHub Pages 🚀
+        uses: JamesIves/github-pages-deploy-action@releases/v4
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: dist # The folder the action should deploy.
+
+  # build_and_deploy:
+  #   name: Build and Publish
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
+  #         fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
+
+  #     - name: Setup Godot
+  #       uses: lihop/setup-godot@v0.1.1
+
+  #     - name: Compile Game
+  #       shell: bash
+  #       run: godot --export "HTML5" --no-window
+
+  #     - name: Deploy Web Assets 🚀
+  #       uses: JamesIves/github-pages-deploy-action@v4.3.3
+  #       with:
+  #         branch: gh-pages
+  #         folder: dist
