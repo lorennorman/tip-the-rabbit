@@ -18,11 +18,11 @@ jobs:
       - name: Setup Godot
         uses: lihop/setup-godot@v0.1.1
 
-      - name: Run demo
+      - name: Compile Game
         shell: bash
-        run: godot --export --no-window
+        run: godot --export "HTML5" --no-window
 
-      - name: Deploy 🚀
+      - name: Deploy Web Assets 🚀
         uses: JamesIves/github-pages-deploy-action@v4.3.3
         with:
           branch: gh-pages
