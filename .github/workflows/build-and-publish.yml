@@ -6,7 +6,6 @@ on:
 
 env:
   GODOT_VERSION: 3.4.5
-  EXPORT_NAME: tip-the-rabbit
 
 jobs:
   build_and_deploy:
@@ -29,8 +28,7 @@ jobs:
       - name: Web Build
         run: |
           mkdir -v -p dist
-          cd $EXPORT_NAME
-          godot -v --export "HTML5" ../dist/index.html
+          godot -v --export "HTML5" dist/index.html
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v1
